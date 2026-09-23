@@ -1,17 +1,17 @@
 gateway:
   replicaCount: 2
-  image: ghcr.io/stefanprodan/podinfo:6.7.1
-  port: 9898
+  image: pulse-gateway:dev
+  port: 8080
 
 orders:
   replicaCount: 2
-  image: ghcr.io/stefanprodan/podinfo:6.7.1
-  port: 9898
+  image: pulse-orders:dev
+  port: 8080
 
 worker:
   replicaCount: 1
-  image: ghcr.io/stefanprodan/podinfo:6.7.1
-  port: 9898
+  image: pulse-worker:dev
+  port: 8080
 
 redis:
   image: redis:7-alpine

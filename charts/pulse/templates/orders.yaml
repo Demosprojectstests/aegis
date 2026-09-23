@@ -17,14 +17,15 @@ spec:
       containers:
         - name: orders
           image: {{ .Values.orders.image }}
+          imagePullPolicy: Never
           ports:
             - containerPort: {{ .Values.orders.port }}
           env:
-            - name: PODINFO_UI_MESSAGE
-              value: pulse-orders
+            - name: REDIS_ADDR
+              value: redis:6379
           readinessProbe:
             httpGet:
-              path: /readyz
+              path: /healthz
               port: {{ .Values.orders.port }}
           livenessProbe:
             httpGet:
