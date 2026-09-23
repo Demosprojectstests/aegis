@@ -1,18 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: aegis-root
+  name: pulse
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/Demosprojectstests/aegis.git
     targetRevision: HEAD
-    path: gitops
+    path: charts/pulse
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: pulse
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
