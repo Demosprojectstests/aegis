@@ -1,0 +1,21 @@
+gateway:
+  replicaCount: 2
+  image: ghcr.io/stefanprodan/podinfo:6.7.1
+  port: 9898
+
+orders:
+  replicaCount: 2
+  image: ghcr.io/stefanprodan/podinfo:6.7.1
+  port: 9898
+
+worker:
+  replicaCount: 1
+  image: ghcr.io/stefanprodan/podinfo:6.7.1
+  port: 9898
+
+redis:
+  image: redis:7-alpine
+  port: 6379
+
+ingress:
+  host: pulse.127.0.0.1.nip.io
