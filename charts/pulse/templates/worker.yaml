@@ -16,14 +16,9 @@ spec:
     spec:
       containers:
         - name: worker
-          image: {{ .Values.worker.image }}
-          ports:
-            - containerPort: {{ .Values.worker.port }}
-          env:
-            - name: PODINFO_UI_MESSAGE
-              value: pulse-worker
-            - name: REDIS_URL
-              value: redis://redis:6379
+          image: {{ .Values.redis.image }}
+          command: ["sh","-c"]
+          args: ["while true; do redis-cli -h redis ping; sleep 2; done"]
           resources:
             requests:
               cpu: 50m
