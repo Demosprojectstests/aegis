@@ -16,12 +16,6 @@ https://github.com/Demosprojectstests/aegis
 - gitops/ — Argo root app, Pulse app, Kyverno policies
 - operator/ — Tenant CRD + controller (Kubebuilder)
 
-## What it is not
-
-- Not production
-- No SSO, billing, or per-tenant Postgres
-- Images are loaded with kind load, not pulled from GHCR
-- kindnet may not enforce NetworkPolicy even though the objects exist
 
 ## Pipeline
 
