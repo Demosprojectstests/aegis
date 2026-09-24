@@ -66,7 +66,12 @@ VPN note: Nord can break kubectl to 127.0.0.1. Disconnect or whitelist 127.0.0.0
       plan: starter
 
 Creates tenant-acme, ResourceQuota, NetworkPolicy. Delete the CR to remove the namespace.
+Quota and NetworkPolicy are owner-referenced to Namespace tenant-<name>.
+Deleting the Tenant deletes that namespace (finalizer); the namespace
+then garbage-collects quota and policy.
 
+Images are local: make images && make operator-deploy
+(kind load + imagePullPolicy Never).
     cd operator
     make docker-build IMG=aegis-operator:dev
     kind load docker-image aegis-operator:dev --name aegis

@@ -61,15 +61,24 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: nsName}}
-	_, err := controllerutil.CreateOrUpdate(ctx, r.Client, ns, func() error {
+	if _, err := controllerutil.CreateOrUpdate(ctx, r.Client, ns, func() error {
 		if ns.Labels == nil {
 			ns.Labels = map[string]string{}
 		}
 		ns.Labels["aegis.dev/tenant"] = tenant.Name
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return r.fail(ctx, &tenant, nsName, err)
+	}
+
+	if err := r.Get(ctx, client.ObjectKey{Name: nsName}, ns); err != nil {
+		return r.fail(ctx, &tenant, nsName, err)
+	}
+	owner := metav1.OwnerReference{
+		APIVersion: "v1",
+		Kind:       "Namespace",
+		Name:       ns.Name,
+		UID:        ns.UID,
 	}
 
 	cpu, mem := "1", "1Gi"
@@ -80,15 +89,15 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	rq := &corev1.ResourceQuota{
 		ObjectMeta: metav1.ObjectMeta{Name: "tenant-quota", Namespace: nsName},
 	}
-	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, rq, func() error {
+	if _, err := controllerutil.CreateOrUpdate(ctx, r.Client, rq, func() error {
+		rq.OwnerReferences = []metav1.OwnerReference{owner}
 		rq.Spec.Hard = corev1.ResourceList{
 			corev1.ResourceRequestsCPU:    resource.MustParse(cpu),
-			corev1.ResourceRequestsMemory: resource.MustParse(mem),
-			corev1.ResourcePods:           resource.MustParse("20"),
+						   corev1.ResourceRequestsMemory: resource.MustParse(mem),
+						   corev1.ResourcePods:           resource.MustParse("20"),
 		}
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return r.fail(ctx, &tenant, nsName, err)
 	}
 
@@ -97,7 +106,8 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	np := &netv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{Name: "tenant-isolate", Namespace: nsName},
 	}
-	_, err = controllerutil.CreateOrUpdate(ctx, r.Client, np, func() error {
+	if _, err := controllerutil.CreateOrUpdate(ctx, r.Client, np, func() error {
+		np.OwnerReferences = []metav1.OwnerReference{owner}
 		np.Spec.PodSelector = metav1.LabelSelector{}
 		np.Spec.PolicyTypes = []netv1.PolicyType{netv1.PolicyTypeIngress, netv1.PolicyTypeEgress}
 		np.Spec.Ingress = []netv1.NetworkPolicyIngressRule{{
@@ -115,8 +125,7 @@ func (r *TenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			},
 		}
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return r.fail(ctx, &tenant, nsName, err)
 	}
 
@@ -140,7 +149,7 @@ func (r *TenantReconciler) fail(ctx context.Context, tenant *platformv1.Tenant, 
 
 func (r *TenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&platformv1.Tenant{}).
-		Named("tenant").
-		Complete(r)
+	For(&platformv1.Tenant{}).
+	Named("tenant").
+	Complete(r)
 }
